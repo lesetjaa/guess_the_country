@@ -2,6 +2,7 @@
 
 import turtle
 import pandas
+from classes.country import Country
 
 screen = turtle.Screen()
 
@@ -11,42 +12,57 @@ screen.addshape(image)
 
 turtle.shape(image)
 
-
-def map_country(x, y):
-    """Updates the 'countries' csv"""
-
-    country = {
-        "country": [],
-        "x": [],
-        "y": []
-    }
-
-    country_name = screen.textinput(
-        "Country Mapper", prompt="What is this country").title()
-    country["country"].append(country_name)
-    country["x"].append(x)
-    country["y"].append(y)
-
-    data = pandas.DataFrame(country)
-    data.to_csv("../resources/countries.csv", mode='a',
-                header=False, index=False)  # append to csv file
-    
-    t = turtle.Turtle(visible=False)
-    t.penup()
-    t.goto((x, y))
-    t.write(country_name)
-    
-# Create csv file
-countries_dict = {
+countries_template = {
     "country": [],
     "x": [],
     "y": []
 }
-countries = pandas.DataFrame(countries_dict)
-countries.to_csv("../resources/countries.csv")
+
+try:
+    with open("../resources/countries.csv") as file:
+        data = file.readlines()
+        if data[1:] == '':
+            pass
+
+        for country in data[1:]:
+            country_info = country.split(",")
+
+            get_country = country_info[1]
+            get_x = float(country_info[2])
+            get_y = float(country_info[3].replace("\n", ''))
+
+            countries_template["country"].append(get_country)
+            countries_template["x"].append(get_x)
+            countries_template["y"].append(get_y)
+
+            t_country = Country(get_country, (get_x, get_y))
+except:
+    print("A new csv file will be created!")
 
 
-turtle.onscreenclick(map_country)
+def add_to_dict(country, x_coord, y_coord):
+    countries_template["country"].append(country)
+    countries_template["x"].append(x_coord)
+    countries_template["y"].append(y_coord)
 
 
+countries_turtles = []
+
+
+def event_handler(x, y):
+    try:
+        response = screen.textinput(
+            title="Enter the country", prompt="What is the name of the country?").title() # type: ignore
+    except:
+        response = "no guess"
+
+    country = Country(response, (x, y))
+    countries_turtles.append(country)
+    add_to_dict(response, x, y)
+
+
+turtle.onscreenclick(event_handler)
 turtle.mainloop()
+
+countries_data = pandas.DataFrame(countries_template)
+countries_data.to_csv("../resources/countries.csv")
