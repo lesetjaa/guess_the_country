@@ -19,7 +19,7 @@ def find_country(country_name):
 
 guessed_countries = []
 
-while len(guessed_countries) < 50:
+while len(guessed_countries) < 54:
     screen.update()
     no_correct_guesses = len(guessed_countries)
 
